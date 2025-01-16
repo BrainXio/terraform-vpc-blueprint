@@ -15,7 +15,7 @@ permissions:
 jobs:
   pr_version_and_changelog:
     if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04  # Or use ubuntu-24.04 if you've confirmed compatibility
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -25,7 +25,7 @@ jobs:
         run: |
           BRANCH_NAME="${{ github.head_ref }}"
           VERSION=${BRANCH_NAME#release/v}
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
       
       - name: Generate Changelog Preview
         uses: actions/create-release@v1
@@ -43,17 +43,19 @@ jobs:
           draft: true
           prerelease: true
 
+      - name: Save Changelog Preview
+        run: echo "${{ steps.changelog_preview.outputs.body }}" > changelog-preview.txt
+
       - name: Upload Changelog Artifact
         uses: actions/upload-artifact@v3
         with:
           name: changelog-preview
-          path: |
-            ${{ steps.changelog_preview.outputs.release_url }}
+          path: changelog-preview.txt
 
   create_release:
     needs: pr_version_and_changelog
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
