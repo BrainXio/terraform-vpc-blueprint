@@ -1,7 +1,7 @@
-import subprocess
+import argparse
 import os
 import shutil
-import argparse
+import subprocess
 
 
 def run_command(command):
@@ -21,8 +21,20 @@ def backup_file(file_path):
     print(f"Backup created: {backup_path}")
 
 
+def sort_imports(file_path):
+    """Sort the imports in the file with isort."""
+    isort_result = run_command(["isort", file_path])
+    if isort_result:
+        print(f"Imports sorted for {file_path}.")
+    else:
+        print(f"Failed to sort imports for {file_path}.")
+
+
 def format_and_patch(file_path):
     """Format the file with Black and apply changes using patch."""
+    # Sort imports first
+    sort_imports(file_path)
+
     # Run Black with --check --diff to get the diff
     black_diff = run_command(
         ["black", "--check", "--diff", "--exclude=.venv", file_path]
@@ -64,7 +76,7 @@ def main(directory):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Format Python files in a directory with Black, one at a time."
+        description="Format Python files in a directory with Black and isort, one at a time."
     )
     parser.add_argument("directory", help="Directory to search for Python files")
     args = parser.parse_args()

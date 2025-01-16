@@ -1,15 +1,15 @@
-import json
 import ipaddress
-import uuid
-import sys
+import json
 import logging
 import os
+import sys
+import uuid
 
 # Add the parent directory to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from scripts.terraform_data_external import TerraformDataExternal
 from scripts.placeholder_processor import PlaceholderProcessor
+from scripts.terraform_data_external import TerraformDataExternal
 
 # Configure logging
 logging.basicConfig(
