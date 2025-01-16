@@ -27,20 +27,20 @@ This example showcases how to configure multiple VPCs for different segments of 
 
 - **VPC Configurations**:
   - **OfficeNetwork (VPC ID 1)**:
-    - **vpc\_cidr**: "10.10.0.0/16" for a Class A network.
-    - **vpc\_subnets**: 10 subnets for various office departments.
+    - **vpc_cidr**: "10.10.0.0/16" for a Class A network.
+    - **vpc_subnets**: 10 subnets for various office departments.
     - **settings**: Domain "local", with subdomains for different office functions, each with a unique VLAN ID.
     - **template**: Dynamic naming for subnets based on department or service.
 
   - **Manufacturing (VPC ID 2)**:
-    - **vpc\_cidr**: "172.16.0.0/16" for a Class B network, suitable for larger manufacturing setups.
-    - **vpc\_subnets**: 5 subnets for distinct manufacturing operations.
+    - **vpc_cidr**: "172.16.0.0/16" for a Class B network, suitable for larger manufacturing setups.
+    - **vpc_subnets**: 5 subnets for distinct manufacturing operations.
     - **settings**: Domain "factory", with subdomains tailored to manufacturing processes, each on a specific VLAN.
     - **template**: Similar naming convention for clarity in network management.
 
   - **RemoteOffice (VPC ID 3)**:
-    - **vpc\_cidr**: "192.168.100.0/24" for a smaller network, ideal for branch offices.
-    - **vpc\_subnets**: 3 subnets for basic office functions in a remote setting.
+    - **vpc_cidr**: "192.168.100.0/24" for a smaller network, ideal for branch offices.
+    - **vpc_subnets**: 3 subnets for basic office functions in a remote setting.
     - **settings**: Domain "remote", with subdomains for general use, management, and development, each with dedicated VLANs.
     - **template**: Consistent naming to maintain organizational clarity.
 
@@ -63,7 +63,7 @@ This configuration is ideal for organizations with diverse operational needs acr
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement_terraform) | >= 1.0.0 |
 
 ## Providers
 
@@ -73,7 +73,7 @@ No providers.
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_multi_vpc"></a> [multi\_vpc](#module\_multi\_vpc) | ../../ | n/a |
+| <a name="module_multi_vpc"></a> [multi_vpc](#module_multi_vpc) | ../../ | n/a |
 
 ## Resources
 
@@ -87,5 +87,5 @@ No inputs.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_multi_vpc_output"></a> [multi\_vpc\_output](#output\_multi\_vpc\_output) | n/a |
+| <a name="output_multi_vpc_output"></a> [multi_vpc_output](#output_multi_vpc_output) | n/a |
 <!-- END_TF_DOCS -->

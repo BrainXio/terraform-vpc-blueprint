@@ -26,14 +26,14 @@ This example shows how to set up a basic VPC with tailored subnetting for differ
 - **Unifi Flag**: `ubiquity_unifi` is set to `true` for Unifi-specific configurations.
 
 - **VPC Configuration**:
-  - **vpc\_id**: Set to 1, ensuring uniqueness.
-  - **vpc\_cidr**: Defines the IP range as 192.168.0.0/16.
-  - **vpc\_name**: Named "Default" for reference.
-  - **vpc\_subnets**: Intends to generate 256 subnets, limited by VLAN range.
+  - **vpc_id**: Set to 1, ensuring uniqueness.
+  - **vpc_cidr**: Defines the IP range as 192.168.0.0/16.
+  - **vpc_name**: Named "Default" for reference.
+  - **vpc_subnets**: Intends to generate 256 subnets, limited by VLAN range.
   - **settings**:
     - **domain**: Base domain set to "lan".
     - **subdomains**: Includes "default", "guest", "iot", "teleport", "camera", "voip", "staff".
-    - **vlan\_range**: VLAN IDs from 0 to 7.
+    - **vlan_range**: VLAN IDs from 0 to 7.
   - **template**:
     - **domain**: Template for dynamic domain names.
     - **name**: Template for naming networks/subnets.
@@ -55,7 +55,7 @@ This setup is ideal for environments needing distinct network segments, ensuring
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement_terraform) | >= 1.0.0 |
 
 ## Providers
 
@@ -65,7 +65,7 @@ No providers.
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_default_vpc"></a> [default\_vpc](#module\_default\_vpc) | ../../ | n/a |
+| <a name="module_default_vpc"></a> [default_vpc](#module_default_vpc) | ../../ | n/a |
 
 ## Resources
 
@@ -79,5 +79,5 @@ No inputs.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_default_vpc"></a> [default\_vpc](#output\_default\_vpc) | n/a |
+| <a name="output_default_vpc"></a> [default_vpc](#output_default_vpc) | n/a |
 <!-- END_TF_DOCS -->

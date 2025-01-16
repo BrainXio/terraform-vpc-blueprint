@@ -26,14 +26,14 @@ This example demonstrates how to set up a custom VPC tailored for an office envi
 - **Unifi Flag**: `ubiquity_unifi` is set to `true` to leverage Unifi-specific features.
 
 - **VPC Configuration**:
-  - **vpc\_id**: Set to 1, ensuring uniqueness.
-  - **vpc\_cidr**: Uses "10.0.0.0/16" for a Class A private network, providing more address space.
-  - **vpc\_name**: Named "OfficeNetwork" for reference.
-  - **vpc\_subnets**: Limited to 10 subnets, suitable for departmental segmentation.
+  - **vpc_id**: Set to 1, ensuring uniqueness.
+  - **vpc_cidr**: Uses "10.0.0.0/16" for a Class A private network, providing more address space.
+  - **vpc_name**: Named "OfficeNetwork" for reference.
+  - **vpc_subnets**: Limited to 10 subnets, suitable for departmental segmentation.
   - **settings**:
     - **domain**: Base domain set to "local".
     - **subdomains**: Customized for office departments and services like "admin", "it", "hr", "marketing", etc.
-    - **vlan\_range**: VLAN IDs are specifically chosen for each department or service, enhancing network isolation.
+    - **vlan_range**: VLAN IDs are specifically chosen for each department or service, enhancing network isolation.
   - **template**:
     - **domain**: Template for dynamic domain names, incorporating subdomains.
     - **name**: Names networks/subnets based on VPC name and subdomain.
@@ -53,7 +53,7 @@ This setup is perfect for an office environment where organizational structure d
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement_terraform) | >= 1.0.0 |
 
 ## Providers
 
@@ -63,7 +63,7 @@ No providers.
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_custom_vpc"></a> [custom\_vpc](#module\_custom\_vpc) | ../../ | n/a |
+| <a name="module_custom_vpc"></a> [custom_vpc](#module_custom_vpc) | ../../ | n/a |
 
 ## Resources
 
@@ -77,5 +77,5 @@ No inputs.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_custom_vpc"></a> [custom\_vpc](#output\_custom\_vpc) | n/a |
+| <a name="output_custom_vpc"></a> [custom_vpc](#output_custom_vpc) | n/a |
 <!-- END_TF_DOCS -->
