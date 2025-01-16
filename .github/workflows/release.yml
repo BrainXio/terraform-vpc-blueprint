@@ -27,23 +27,22 @@ jobs:
           VERSION=${BRANCH_NAME#release/v}
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
       
-      - name: Generate Changelog Preview
+      - name: Create Preview Release
         uses: elgohr/Github-Release-Action@v5
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Changed from GITHUB_TOKEN to GH_TOKEN as per the example
         with:
           title: Preview Release ${{ steps.extract_version.outputs.version }}
           tag: ${{ steps.extract_version.outputs.version }}
-          body: |
-            **Changelog Preview for ${{ steps.extract_version.outputs.version }}**
-            
-            ```bash
-            git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s" --no-merges  
-            ```
-          prerelease: true  # Instead of 'draft', we use 'prerelease' for draft releases
+          prerelease: true
 
-      - name: Save Changelog Preview
-        run: echo "${{ steps.changelog_preview.outputs.body }}" > changelog-preview.txt
+      - name: Generate Changelog Preview
+        run: |
+          echo "**Changelog Preview for ${{ steps.extract_version.outputs.version }}**" > changelog-preview.txt
+          echo "" >> changelog-preview.txt
+          echo "```bash" >> changelog-preview.txt
+          git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s" --no-merges >> changelog-preview.txt
+          echo "```" >> changelog-preview.txt
 
       - name: Upload Changelog Artifact
         uses: actions/upload-artifact@v4
@@ -82,16 +81,26 @@ jobs:
           git commit -m "Update CHANGELOG.md for ${{ steps.extract_version.outputs.version }}"
 
       - name: Create Tag
+        id: create_tag
         run: |
           git tag -a v${{ steps.extract_version.outputs.version }} -m "Version ${{ steps.extract_version.outputs.version }}"
           git push origin v${{ steps.extract_version.outputs.version }}
 
+      - name: Check if tag already exists
+        id: check_tag
+        run: |
+          if git ls-remote --tags origin | grep -q "refs/tags/v${{ steps.extract_version.outputs.version }}"; then
+            echo "tag_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "tag_exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create GitHub Release
+        if: steps.check_tag.outputs.tag_exists == 'false'
         uses: elgohr/Github-Release-Action@v5
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           title: Release ${{ steps.extract_version.outputs.version }}
           tag: v${{ steps.extract_version.outputs.version }}
-          body_path: CHANGELOG.md
-          prerelease: false  # Instead of draft, we use prerelease with false for full releases
+          prerelease: false
