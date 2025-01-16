@@ -9,6 +9,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
   pr_version_and_changelog:
     if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
