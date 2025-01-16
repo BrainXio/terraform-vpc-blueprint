@@ -1,0 +1,15 @@
+repos:
+  - repo: local
+    hooks:
+      - id: lint-patch
+        name: Lint and Patch Python Files
+        entry: python lint_patch.py
+        language: system
+        files: '\.py$'
+        stages: [commit]
+      - id: generate-docs
+        name: Generate Terraform Documentation
+        entry: terraform-docs markdown --header-from docs/header.txt --footer-from docs/footer.txt --output-file README.md .
+        language: system
+        files: '\.(tf|tfvars)$'
+        stages: [commit]

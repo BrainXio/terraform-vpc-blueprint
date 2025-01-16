@@ -35,3 +35,15 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+# Ignore .venv
+.venv
+
+# Ignore pycache
+__pycache__
+
+# Ignore .pytest_cache
+.pytest_cache
+
+# .bak files
+*.bak

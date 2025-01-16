@@ -1,0 +1,60 @@
+# terraform-vpc-blueprint
+
+"Terraform module for designing and deploying customizable VPC architectures with subnet and VLAN management."
+
+## Overview
+
+This module facilitates the creation of complex VPC structures in Terraform by leveraging Python scripts to dynamically generate subnets, VLANs, and other network configurations. It's designed to be flexible, allowing you to specify multiple VPCs with different settings, subnets, and VLAN ranges.
+
+## Usage
+
+To use this module, you need to provide configurations for your VPCs via the `vpc_configurations` variable. Here's how you can integrate it into your Terraform setup:
+
+### Example Usage
+
+```hcl
+module "vpc_blueprint" {
+  source         = "brainxio/terraform-vpc-blueprint"
+  vpc_configurations = [
+        {
+        vpc_id      = 1
+        vpc_cidr    = "192.168.0.0/16"
+        vpc_name    = "Default"
+        vpc_subnets = 256
+        settings    = {
+          domain       = "lan"
+          subdomains   = ["default", "guest", "iot", "teleport", "camera", "voip", "staff"]
+          vlan_range   = "0-7"
+        }
+        template    = {
+          domain       = "{settings_subdomains}.{settings_domain}"
+          name         = "{vpc_name} {settings_subdomains} network"
+        }
+      },
+    # Add more VPC configurations as needed
+  ]
+  ubiquity_unifi = true # Set to true if using Unifi-specific configurations
+}
+
+output "vpc_config" {
+  value = module.vpc_blueprint.config
+}
+```
+
+### `vpc_configurations` Explanation
+
+- **vpc_id**: An identifier for the VPC. Must be unique across all configurations.
+- **vpc_cidr**: The CIDR block for this VPC. This defines the IP range for your network.
+- **vpc_name**: A name for the VPC, used in template processing for naming subnets or other resources.
+- **vpc_subnets**: The number of subnets to generate within this VPC.
+- **settings**: 
+  - **domain**: The domain suffix for subnets (e.g., "local").
+  - **subdomains**: A list of subdomain names that can be used to create distinct networks within your VPC.
+  - **vlan_range**: A string defining the VLAN IDs to use. Can be a range (e.g., "1-10"), a list (e.g., "1,2,3"), or a single VLAN ID. This determines how many subnets will be created or mapped to VLANs.
+- **template**: 
+  - **domain**: A template string for the domain. Placeholders like `{settings_subdomains}` will be replaced with actual data from `settings`.
+  - **name**: A template for naming subnets or networks. Placeholders here will also be replaced with actual data.
+
+### Unifi-Specific Features
+
+- **ubiquity_unifi**: When set to `true`, the module will respect certain reserved subnets and VLANs specific to Unifi setups, like reserving the 192.168.4.0/24 subnet for Teleport VPN.

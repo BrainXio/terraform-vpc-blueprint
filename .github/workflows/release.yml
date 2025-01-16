@@ -1,0 +1,120 @@
+name: Release
+
+on:
+  pull_request:
+    branches: 
+      - main
+    types: [opened, synchronize]
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  pr_version_and_changelog:
+    if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Extract version from branch name
+        id: extract_version
+        run: |
+          BRANCH_NAME="${{ github.head_ref }}"
+          VERSION=${BRANCH_NAME#release/v}
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      
+      - name: Get Commit SHA
+        id: get_sha
+        run: |
+          echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+      
+      - name: Create Preview Release
+        uses: elgohr/Github-Release-Action@v5
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          title: Preview Release ${{ steps.extract_version.outputs.version }}-alpha-${{ steps.get_sha.outputs.sha }}
+          tag: ${{ steps.extract_version.outputs.version }}-rc-${{ steps.get_sha.outputs.sha }}
+          prerelease: true
+
+      - name: Generate Changelog Preview
+        run: |
+          echo "**Changelog Preview for ${{ steps.extract_version.outputs.version }}-alpha-${{ steps.get_sha.outputs.sha }}**" > changelog-preview.txt
+          echo "" >> changelog-preview.txt
+          echo "```bash" >> changelog-preview.txt
+          git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s" --no-merges >> changelog-preview.txt
+          echo "```" >> changelog-preview.txt
+
+      - name: Upload Changelog Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: changelog-preview
+          path: changelog-preview.txt
+
+  create_release:
+    needs: pr_version_and_changelog
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Download Changelog Preview
+        uses: actions/download-artifact@v4
+        with:
+          name: changelog-preview
+
+      - name: Update CHANGELOG.md
+        run: |
+          echo "# Changelog" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "## ${{ steps.extract_version.outputs.version }}" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s" --no-merges >> CHANGELOG.md
+
+      - name: Commit CHANGELOG.md
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add CHANGELOG.md
+          git commit -m "Update CHANGELOG.md for ${{ steps.extract_version.outputs.version }}"
+
+      - name: Create Tag
+        id: create_tag
+        run: |
+          git tag -a v${{ steps.extract_version.outputs.version }} -m "Version ${{ steps.extract_version.outputs.version }}"
+          git push origin v${{ steps.extract_version.outputs.version }}
+
+      - name: Check if tag already exists
+        id: check_tag
+        run: |
+          if git ls-remote --tags origin | grep -q "refs/tags/v${{ steps.extract_version.outputs.version }}"; then
+            echo "tag_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "tag_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
+        if: steps.check_tag.outputs.tag_exists == 'false'
+        uses: elgohr/Github-Release-Action@v5
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          title: Release ${{ steps.extract_version.outputs.version }}
+          tag: v${{ steps.extract_version.outputs.version }}
+          prerelease: false
+
+      - name: Cleanup Release Candidate Tags
+        run: |
+            # Fetch all tags
+            git fetch --tags
+            
+            # Delete all tags that match the pattern of your release candidates
+            git tag -l "${{ steps.extract_version.outputs.version }}-rc-*" | xargs -I {} git tag -d {}
+            git tag -l "${{ steps.extract_version.outputs.version }}-rc-*" | xargs -I {} git push origin :refs/tags/{}
