@@ -10,7 +10,6 @@ on:
       - main
 
 jobs:
-  # Job to handle PR actions
   pr_version_and_changelog:
     if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
     runs-on: ubuntu-latest
@@ -26,8 +25,9 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
       
       - name: Generate Changelog Preview
-        id: changelog_preview
         uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.extract_version.outputs.version }}
           release_name: Preview Release ${{ steps.extract_version.outputs.version }}
@@ -47,7 +47,6 @@ jobs:
           path: |
             ${{ steps.changelog_preview.outputs.release_url }}
 
-  # Job to handle release creation when PR is merged
   create_release:
     needs: pr_version_and_changelog
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -69,7 +68,6 @@ jobs:
           echo "" >> CHANGELOG.md
           echo "## ${{ steps.extract_version.outputs.version }}" >> CHANGELOG.md
           echo "" >> CHANGELOG.md
-          # Assume the changelog preview was saved to a file or you can directly append the git log here
           git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s" --no-merges >> CHANGELOG.md
 
       - name: Commit CHANGELOG.md
