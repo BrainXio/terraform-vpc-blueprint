@@ -1,0 +1,96 @@
+name: Release
+
+on:
+  pull_request:
+    branches: 
+      - main
+    types: [opened, synchronize]
+  push:
+    branches:
+      - main
+
+jobs:
+  # Job to handle PR actions
+  pr_version_and_changelog:
+    if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Extract version from branch name
+        id: extract_version
+        run: |
+          BRANCH_NAME="${{ github.head_ref }}"
+          VERSION=${BRANCH_NAME#release/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+      
+      - name: Generate Changelog Preview
+        id: changelog_preview
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ steps.extract_version.outputs.version }}
+          release_name: Preview Release ${{ steps.extract_version.outputs.version }}
+          body: |
+            **Changelog Preview for ${{ steps.extract_version.outputs.version }}**
+            
+            ```bash
+            git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s" --no-merges  
+            ```
+          draft: true
+          prerelease: true
+
+      - name: Upload Changelog Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: changelog-preview
+          path: |
+            ${{ steps.changelog_preview.outputs.release_url }}
+
+  # Job to handle release creation when PR is merged
+  create_release:
+    needs: pr_version_and_changelog
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Download Changelog Preview
+        uses: actions/download-artifact@v3
+        with:
+          name: changelog-preview
+
+      - name: Update CHANGELOG.md
+        run: |
+          echo "# Changelog" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "## ${{ steps.extract_version.outputs.version }}" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          # Assume the changelog preview was saved to a file or you can directly append the git log here
+          git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s" --no-merges >> CHANGELOG.md
+
+      - name: Commit CHANGELOG.md
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add CHANGELOG.md
+          git commit -m "Update CHANGELOG.md for ${{ steps.extract_version.outputs.version }}"
+
+      - name: Create Tag
+        run: |
+          git tag -a v${{ steps.extract_version.outputs.version }} -m "Version ${{ steps.extract_version.outputs.version }}"
+          git push origin v${{ steps.extract_version.outputs.version }}
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.extract_version.outputs.version }}
+          release_name: Release ${{ steps.extract_version.outputs.version }}
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false
