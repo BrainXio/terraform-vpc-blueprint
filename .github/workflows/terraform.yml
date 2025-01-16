@@ -1,0 +1,49 @@
+name: Terraform Checks
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**.tf'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - '**.tf'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.10.4
+
+    - name: Terraform Format Check
+      run: |
+        terraform fmt -check -recursive -diff
+      continue-on-error: true  # This will show diff but won't fail the job
+
+    - name: Terraform Initialization
+      run: terraform init
+
+    - name: Terraform Validation
+      run: terraform validate
+
+    - name: Print Terraform Format Results
+      if: failure()
+      run: |
+        echo "Terraform formatting check failed. Here are the changes needed:"
+        echo "-----------------------------------------------------"
+        terraform fmt -recursive -diff
+
+    - name: Print Terraform Validation Results
+      if: failure()
+      run: |
+        echo "Terraform validation failed. Here are the details:"
+        echo "-----------------------------------------------------"
+        terraform validate
