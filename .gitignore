@@ -44,3 +44,6 @@ __pycache__
 
 # Ignore .pytest_cache
 .pytest_cache
+
+# .bak files
+*.bak
