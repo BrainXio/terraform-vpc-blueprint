@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from scripts.vpc_blueprint import VpcGenerator
 from scripts.placeholder_processor import PlaceholderProcessor
 
+
 def test_vpc_generator_init():
     """Test initialization of VpcGenerator."""
     vpc_config = {
@@ -17,11 +18,12 @@ def test_vpc_generator_init():
         "vpc_name": "Test VPC",
         "vpc_subnets": 2,
         "settings": {"vlan_range": "1-2"},
-        "template": {}
+        "template": {},
     }
     generator = VpcGenerator(vpc_config)
     assert generator.vpc == vpc_config
     assert generator.ubiquity_unifi == False
+
 
 def test_generate_subnets():
     """Test the generation of subnets."""
@@ -33,8 +35,8 @@ def test_generate_subnets():
         "settings": {"vlan_range": "1,2"},
         "template": {
             "domain": "{vpc_name}.lan",
-            "name": "{vpc_name} {count_index}"
-        }
+            "name": "{vpc_name} {count_index}",
+        },
     }
     generator = VpcGenerator(vpc_config)
     subnets = generator.generate_subnets()
@@ -52,6 +54,7 @@ def test_generate_subnets():
         assert "dhcp_stop" in subnet
         assert "description" in subnet
 
+
 def test_generate_subnets_with_unifi():
     """Test subnet generation with Unifi specific settings."""
     vpc_config = {
@@ -62,8 +65,8 @@ def test_generate_subnets_with_unifi():
         "settings": {"vlan_range": "1,2,3,4"},
         "template": {
             "domain": "{vpc_name}.lan",
-            "name": "{vpc_name} {count_index}"
-        }
+            "name": "{vpc_name} {count_index}",
+        },
     }
     generator = VpcGenerator(vpc_config, ubiquity_unifi=True)
     subnets = generator.generate_subnets()
@@ -82,6 +85,7 @@ def test_generate_subnets_with_unifi():
     # Adjust expectation if necessary based on how many subnets are actually generated
     assert len(other_subnets) == 3  # 4 VLANs specified, one is reserved for Teleport VPN
 
+
 def test_parse_vlan_range():
     """Test parsing of VLAN range strings."""
     generator = VpcGenerator({})
@@ -89,12 +93,14 @@ def test_parse_vlan_range():
     assert generator._parse_vlan_range("1,2,3") == [1, 2, 3]
     assert generator._parse_vlan_range("1") == [1]
 
+
 def test_calculate_new_prefix():
     """Test calculation of new prefix for subnet division."""
     generator = VpcGenerator({})
     assert generator._calculate_new_prefix(24, 2) == 25  # /24 to /25 for 2 subnets
     with pytest.raises(ValueError):
         generator._calculate_new_prefix(32, 2)  # Can't divide /32 further
+
 
 if __name__ == "__main__":
     pytest.main([__file__])

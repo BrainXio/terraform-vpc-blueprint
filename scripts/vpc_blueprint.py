@@ -12,8 +12,11 @@ from scripts.terraform_data_external import TerraformDataExternal
 from scripts.placeholder_processor import PlaceholderProcessor
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
+
 
 class VpcGenerator:
     def __init__(self, vpc, ubiquity_unifi=False):
@@ -66,7 +69,7 @@ class VpcGenerator:
                     "dhcp_stop": None,
                     "domain": None,
                     "gateway": None,
-                    "description": "Reserved for Teleport VPN server"
+                    "description": "Reserved for Teleport VPN server",
                 })
             else:
                 try:
@@ -134,9 +137,10 @@ class VpcGenerator:
     def _get_subnet_purpose(self, cidr):
         reserved_subnets = {
             "192.168.4.0/24": "Reserved for Teleport VPN server",
-            "10.255.253.0/24": "Reserved for Inter-VLAN routing (VLAN 4040)"
+            "10.255.253.0/24": "Reserved for Inter-VLAN routing (VLAN 4040)",
         }
         return reserved_subnets.get(cidr)
+
 
 if __name__ == "__main__":
     try:

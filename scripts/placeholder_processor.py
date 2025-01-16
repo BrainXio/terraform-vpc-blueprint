@@ -6,6 +6,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+
 class PlaceholderProcessor:
     def __init__(self, data):
         """
@@ -176,6 +177,7 @@ class PlaceholderProcessor:
                 items[new_key] = v
         return items
 
+
 if __name__ == "__main__":
     input_data = {
         "vpcs": [
@@ -187,14 +189,14 @@ if __name__ == "__main__":
                 "settings": {
                     "domain": "lan",
                     "prefix": "red",
-                    "region_letters": ["a","b","c","d"],
-                    "vlan_range": "1-4"
+                    "region_letters": ["a", "b", "c", "d"],
+                    "vlan_range": "1-4",
                 },
                 "template": {
                     "domain": "{settings_prefix}-{vpc_id}{settings_region_letters}.{settings_domain}",
                     "base_name": "{settings_prefix}-{vpc_id}{settings_region_letters}",
                     "network": "{vpc_name}-{vpc_id}",
-                }
+                },
             }
         ]
     }
