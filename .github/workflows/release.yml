@@ -27,18 +27,23 @@ jobs:
           VERSION=${BRANCH_NAME#release/v}
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
       
+      - name: Get Commit SHA
+        id: get_sha
+        run: |
+          echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+      
       - name: Create Preview Release
         uses: elgohr/Github-Release-Action@v5
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Changed from GITHUB_TOKEN to GH_TOKEN as per the example
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          title: Preview Release ${{ steps.extract_version.outputs.version }}
-          tag: ${{ steps.extract_version.outputs.version }}
+          title: Preview Release ${{ steps.extract_version.outputs.version }}-alpha-${{ steps.get_sha.outputs.sha }}
+          tag: ${{ steps.extract_version.outputs.version }}-rc-${{ steps.get_sha.outputs.sha }}
           prerelease: true
 
       - name: Generate Changelog Preview
         run: |
-          echo "**Changelog Preview for ${{ steps.extract_version.outputs.version }}**" > changelog-preview.txt
+          echo "**Changelog Preview for ${{ steps.extract_version.outputs.version }}-alpha-${{ steps.get_sha.outputs.sha }}**" > changelog-preview.txt
           echo "" >> changelog-preview.txt
           echo "```bash" >> changelog-preview.txt
           git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s" --no-merges >> changelog-preview.txt
