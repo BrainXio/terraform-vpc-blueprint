@@ -1,0 +1,83 @@
+## Development
+
+### Installing Pre-Commit
+
+**Linux:**
+
+- Ensure you have git installed. Then, install pre-commit via pip:
+  
+  ```
+  pip install pre-commit
+  ```
+
+- Navigate to your project root:
+
+  ```
+  cd /path/to/your/project
+  ```
+
+- Install the pre-commit hooks:
+
+  ```
+  pre-commit install
+  ```
+
+**Mac:**
+
+- Similar to Linux, ensure git is installed. Use pip to install pre-commit:
+
+  ```
+  pip install pre-commit
+  ```
+
+- Change to your project directory:
+
+  ```
+  cd /path/to/your/project
+  ```
+
+- Install the hooks:
+
+  ```
+  pre-commit install
+  ```
+
+**Windows:**
+
+- Install Python, which should include pip. Then install pre-commit:
+
+  ```
+  pip install pre-commit
+  ```
+
+- Open Command Prompt or Git Bash, navigate to your project directory:
+
+  ```
+  cd \path\to\your\project
+  ```
+
+- Install the hooks:
+
+  ```
+  pre-commit install
+  ```
+
+### Understanding lint_patch.py
+
+lint_patch.py is a Python script designed to automate the formatting and import sorting of Python files before they are committed to the Git repository. Here's what it does:
+
+- **Backup**: Creates a backup of each Python file before modifications are applied.
+- **Sort Imports**: Uses isort to sort and organize import statements in Python files, ensuring consistency in how modules are imported across your codebase.
+- **Format with Black**: Applies the Black code formatter to each Python file to standardize code style, improving readability and reducing style debates.
+
+This script is particularly useful in maintaining a clean codebase where:
+
+- All Python files conform to the same formatting standards.
+- Import statements are consistently sorted, making it easier to manage dependencies.
+- Changes can be reverted if necessary, thanks to the backups.
+
+By integrating lint_patch.py into your pre-commit hook, every commit will automatically be checked and formatted, ensuring that your code adheres to the project's coding standards before it enters the version control system.
+
+### Using with Terraform Docs
+
+After setting up pre-commit, you can use this setup in conjunction with terraform-docs to generate markdown documentation for your Terraform modules. terraform-docs will read the module's configuration and this footer.txt to compile complete documentation, including the development practices described here, into a markdown file for better project documentation and collaboration.

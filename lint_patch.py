@@ -2,6 +2,7 @@ import argparse
 import os
 import shutil
 import subprocess
+import sys  # Added for handling command-line args
 
 
 def run_command(command):
@@ -61,26 +62,26 @@ def format_and_patch(file_path):
     print(f"File {file_path} has been reformatted successfully.")
 
 
-def main(directory):
-    for root, _, files in os.walk(directory):
-        for file in files:
-            if file.endswith(".py"):
-                file_path = os.path.join(root, file)
-                if os.path.exists(file_path):
-                    print(f"Processing file: {file_path}")
-                    backup_file(file_path)
-                    format_and_patch(file_path)
-                else:
-                    print(f"File {file_path} does not exist.")
+def main(file_paths):
+    for file_path in file_paths:
+        if file_path.endswith(".py"):
+            if os.path.exists(file_path):
+                print(f"Processing file: {file_path}")
+                backup_file(file_path)
+                format_and_patch(file_path)
+            else:
+                print(f"File {file_path} does not exist.")
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Format Python files in a directory with Black and isort, one at a time."
-    )
-    parser.add_argument("directory", help="Directory to search for Python files")
-    args = parser.parse_args()
-    if os.path.isdir(args.directory):
-        main(args.directory)
-    else:
-        print(f"Directory {args.directory} does not exist.")
+def main(file_paths):
+    # Format the script itself first
+    format_and_patch(__file__)
+
+    for file_path in file_paths:
+        if file_path.endswith(".py") and file_path != __file__:
+            if os.path.exists(file_path):
+                print(f"Processing file: {file_path}")
+                backup_file(file_path)
+                format_and_patch(file_path)
+            else:
+                print(f"File {file_path} does not exist.")
