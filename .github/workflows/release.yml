@@ -40,8 +40,7 @@ jobs:
             ```bash
             git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s" --no-merges  
             ```
-          draft: true
-          prerelease: true
+          prerelease: true  # Instead of 'draft', we use 'prerelease' for draft releases
 
       - name: Save Changelog Preview
         run: echo "${{ steps.changelog_preview.outputs.body }}" > changelog-preview.txt
@@ -95,5 +94,4 @@ jobs:
           title: Release ${{ steps.extract_version.outputs.version }}
           tag: v${{ steps.extract_version.outputs.version }}
           body_path: CHANGELOG.md
-          draft: false
-          prerelease: false
+          prerelease: false  # Instead of draft, we use prerelease with false for full releases
