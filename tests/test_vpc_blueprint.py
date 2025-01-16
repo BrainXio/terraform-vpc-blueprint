@@ -4,7 +4,7 @@ import sys
 import os
 
 # Add the parent directory to sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from scripts.vpc_blueprint import VpcGenerator
 from scripts.placeholder_processor import PlaceholderProcessor
@@ -40,7 +40,7 @@ def test_generate_subnets():
     }
     generator = VpcGenerator(vpc_config)
     subnets = generator.generate_subnets()
-    
+
     assert len(subnets) == 2  # Since we defined 2 VLANs
     for subnet in subnets:
         assert "cidr" in subnet
@@ -70,20 +70,24 @@ def test_generate_subnets_with_unifi():
     }
     generator = VpcGenerator(vpc_config, ubiquity_unifi=True)
     subnets = generator.generate_subnets()
-    
+
     # Check if the reserved subnet for Teleport VPN is handled correctly by name
-    teleport_subnet = next((s for s in subnets if s.get('name') == "Teleport VPN server"), None)
+    teleport_subnet = next(
+        (s for s in subnets if s.get("name") == "Teleport VPN server"), None
+    )
     assert teleport_subnet is not None
-    assert teleport_subnet['dhcp_start'] is None
-    assert teleport_subnet['dhcp_stop'] is None
-    assert teleport_subnet['domain'] is None
-    assert teleport_subnet['gateway'] is None
-    assert teleport_subnet['description'] == "Reserved for Teleport VPN server"
+    assert teleport_subnet["dhcp_start"] is None
+    assert teleport_subnet["dhcp_stop"] is None
+    assert teleport_subnet["domain"] is None
+    assert teleport_subnet["gateway"] is None
+    assert teleport_subnet["description"] == "Reserved for Teleport VPN server"
 
     # Ensure other subnets are generated correctly
-    other_subnets = [s for s in subnets if s.get('name') != "Teleport VPN server"]
-    # Adjust expectation if necessary based on how many subnets are actually generated
-    assert len(other_subnets) == 3  # 4 VLANs specified, one is reserved for Teleport VPN
+    other_subnets = [s for s in subnets if s.get("name") != "Teleport VPN server"]
+    # Adjust expectation if necessary based on how many subnets are generated
+    assert (
+        len(other_subnets) == 3
+    )  # 4 VLANs specified, one is reserved for Teleport VPN
 
 
 def test_parse_vlan_range():

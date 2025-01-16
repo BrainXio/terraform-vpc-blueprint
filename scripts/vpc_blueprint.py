@@ -6,14 +6,14 @@ import logging
 import os
 
 # Add the parent directory to sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from scripts.terraform_data_external import TerraformDataExternal
 from scripts.placeholder_processor import PlaceholderProcessor
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -25,32 +25,36 @@ class VpcGenerator:
 
     def generate_subnets(self):
         try:
-            network = ipaddress.ip_network(self.vpc['vpc_cidr'])
+            network = ipaddress.ip_network(self.vpc["vpc_cidr"])
         except ValueError as e:
             raise ValueError(f"Invalid VPC CIDR: {self.vpc['vpc_cidr']}") from e
 
-        num_subnets = self.vpc['vpc_subnets']
+        num_subnets = self.vpc["vpc_subnets"]
         if num_subnets <= 0:
-            raise ValueError(f"Invalid number of subnets: {num_subnets}. Must be positive.")
+            raise ValueError(
+                f"Invalid number of subnets: {num_subnets}. Must be positive."
+            )
 
-        vlan_range = self.vpc['settings'].get('vlan_range', '1-1')
+        vlan_range = self.vpc["settings"].get("vlan_range", "1-1")
         vlan_ids = self._parse_vlan_range(vlan_range)
 
         name_prefix = network.prefixlen
         new_prefix = self._calculate_new_prefix(name_prefix, num_subnets)
 
         subnets = []
-        processor = PlaceholderProcessor({'vpcs': [self.vpc]})
+        processor = PlaceholderProcessor({"vpcs": [self.vpc]})
         vlan_counter = 0
 
-        reserved_subnet = ipaddress.ip_network("192.168.4.0/24") if self.ubiquity_unifi else None
+        reserved_subnet = (
+            ipaddress.ip_network("192.168.4.0/24") if self.ubiquity_unifi else None
+        )
 
         for i, subnet in enumerate(network.subnets(new_prefix=new_prefix)):
             if vlan_counter >= len(vlan_ids):
                 break
 
             current_vlan_id = vlan_ids[vlan_counter]
-            
+
             if current_vlan_id == 0:
                 vlan_counter += 1
                 continue
@@ -63,30 +67,45 @@ class VpcGenerator:
             }
 
             if self.ubiquity_unifi and subnet.overlaps(reserved_subnet):
-                subnet_details.update({
-                    "name": "Teleport VPN server",
-                    "dhcp_start": None,
-                    "dhcp_stop": None,
-                    "domain": None,
-                    "gateway": None,
-                    "description": "Reserved for Teleport VPN server",
-                })
+                subnet_details.update(
+                    {
+                        "name": "Teleport VPN server",
+                        "dhcp_start": None,
+                        "dhcp_stop": None,
+                        "domain": None,
+                        "gateway": None,
+                        "description": "Reserved for Teleport VPN server",
+                    }
+                )
             else:
                 try:
                     subnet_details.update(self._scale_dhcp(subnet))
-                    if 'template' in self.vpc:
+                    if "template" in self.vpc:
                         context = processor._create_context(self.vpc)
-                        context['count_index'] = vlan_counter + 1  # 1-based index
-                        processed_subnet = processor._process_vpc(self.vpc, context, vlan_counter)
-                        subnet_details.update({
-                            "domain": processed_subnet.get("domain", f"subdomain_{vlan_counter}.lan"),
-                            "name": processed_subnet.get("name", f"{self.vpc['vpc_name']} Region {vlan_counter}"),
-                        })
+                        context["count_index"] = vlan_counter + 1  # 1-based index
+                        processed_subnet = processor._process_vpc(
+                            self.vpc, context, vlan_counter
+                        )
+                        subnet_details.update(
+                            {
+                                "domain": processed_subnet.get(
+                                    "domain", f"subdomain_{vlan_counter}.lan"
+                                ),
+                                "name": processed_subnet.get(
+                                    "name",
+                                    f"{self.vpc['vpc_name']} Region {vlan_counter}",
+                                ),
+                            }
+                        )
                     else:
-                        subnet_details["name"] = f"{self.vpc['vpc_name']} Region {vlan_counter}"
+                        subnet_details["name"] = (
+                            f"{self.vpc['vpc_name']} Region {vlan_counter}"
+                        )
                         subnet_details["domain"] = f"subdomain_{vlan_counter}.lan"
                     subnet_details["gateway"] = str(subnet.network_address + 1)
-                    subnet_details["description"] = self._get_vlan_description(current_vlan_id)
+                    subnet_details["description"] = self._get_vlan_description(
+                        current_vlan_id
+                    )
                 except Exception as e:
                     logger.error(f"Error processing subnet {str(subnet)}: {str(e)}")
                     continue  # Skip this subnet if there's an error
@@ -97,11 +116,11 @@ class VpcGenerator:
         return subnets
 
     def _parse_vlan_range(self, vlan_range):
-        if '-' in vlan_range:
-            start, end = map(int, vlan_range.split('-'))
+        if "-" in vlan_range:
+            start, end = map(int, vlan_range.split("-"))
             return list(range(start, end + 1))
-        elif ',' in vlan_range:
-            return [int(v) for v in vlan_range.split(',')]
+        elif "," in vlan_range:
+            return [int(v) for v in vlan_range.split(",")]
         else:
             return [int(vlan_range)]
 
@@ -145,8 +164,8 @@ class VpcGenerator:
 if __name__ == "__main__":
     try:
         input_data = json.load(sys.stdin)
-        input_data['vpcs'] = json.loads(input_data['vpcs'])
-        ubiquity_unifi = json.loads(input_data.get('ubiquity_unifi', 'false'))
+        input_data["vpcs"] = json.loads(input_data["vpcs"])
+        ubiquity_unifi = json.loads(input_data.get("ubiquity_unifi", "false"))
 
         encoder = TerraformDataExternal()
         encoder.process_inputs(input_data)
