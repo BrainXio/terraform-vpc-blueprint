@@ -109,3 +109,12 @@ jobs:
           title: Release ${{ steps.extract_version.outputs.version }}
           tag: v${{ steps.extract_version.outputs.version }}
           prerelease: false
+
+      - name: Cleanup Release Candidate Tags
+        run: |
+            # Fetch all tags
+            git fetch --tags
+            
+            # Delete all tags that match the pattern of your release candidates
+            git tag -l "${{ steps.extract_version.outputs.version }}-rc-*" | xargs -I {} git tag -d {}
+            git tag -l "${{ steps.extract_version.outputs.version }}-rc-*" | xargs -I {} git push origin :refs/tags/{}
