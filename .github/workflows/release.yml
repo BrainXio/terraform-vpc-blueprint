@@ -15,7 +15,7 @@ permissions:
 jobs:
   pr_version_and_changelog:
     if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release/v')
-    runs-on: ubuntu-22.04  # Or use ubuntu-24.04 if you've confirmed compatibility
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -28,12 +28,12 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
       
       - name: Generate Changelog Preview
-        uses: actions/create-release@v1
+        uses: elgohr/Github-Release-Action@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.extract_version.outputs.version }}
-          release_name: Preview Release ${{ steps.extract_version.outputs.version }}
+          title: Preview Release ${{ steps.extract_version.outputs.version }}
+          tag: ${{ steps.extract_version.outputs.version }}
           body: |
             **Changelog Preview for ${{ steps.extract_version.outputs.version }}**
             
@@ -88,12 +88,12 @@ jobs:
           git push origin v${{ steps.extract_version.outputs.version }}
 
       - name: Create GitHub Release
-        uses: actions/create-release@v1
+        uses: elgohr/Github-Release-Action@v5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ steps.extract_version.outputs.version }}
-          release_name: Release ${{ steps.extract_version.outputs.version }}
+          title: Release ${{ steps.extract_version.outputs.version }}
+          tag: v${{ steps.extract_version.outputs.version }}
           body_path: CHANGELOG.md
           draft: false
           prerelease: false
