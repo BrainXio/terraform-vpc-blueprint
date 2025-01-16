@@ -4,8 +4,9 @@ from datetime import datetime
 import logging
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
 
 class TerraformDataExternal:
     def __init__(self):
@@ -49,7 +50,7 @@ class TerraformDataExternal:
             data_to_encode = {
                 "config": self.config,
                 "source": self.source,
-                "timestamp": self.timestamp
+                "timestamp": self.timestamp,
             }
             json_data = json.dumps(data_to_encode)
             encoded = base64.b64encode(json_data.encode()).decode()
@@ -59,6 +60,7 @@ class TerraformDataExternal:
             logger.error(f"Error encoding data to JSON: {e}")
             raise
 
+
 if __name__ == "__main__":
     # Example data for testing
     test_input = {
@@ -67,7 +69,7 @@ if __name__ == "__main__":
                 "vpc_id": 1,
                 "vpc_cidr": "192.168.0.0/24",
                 "vpc_name": "Test VPC",
-                "vpc_subnets": 2
+                "vpc_subnets": 2,
             }
         ]
     }
@@ -75,7 +77,7 @@ if __name__ == "__main__":
     try:
         # Create an instance of TerraformDataExternal
         encoder = TerraformDataExternal()
-        
+
         # Process the test input
         encoder.process_inputs(test_input)
 

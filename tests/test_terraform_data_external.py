@@ -10,12 +10,14 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from scripts.terraform_data_external import TerraformDataExternal
 
+
 def test_init():
     """Test initialization of TerraformDataExternal."""
     encoder = TerraformDataExternal()
     assert isinstance(encoder.config, dict)
     assert isinstance(encoder.source, dict)
     assert isinstance(encoder.timestamp, str)
+
 
 def test_process_inputs_valid_json():
     """Test processing valid JSON string input."""
@@ -26,6 +28,7 @@ def test_process_inputs_valid_json():
     assert encoder.source == json.loads(test_input)
     assert isinstance(encoder.timestamp, str)
 
+
 def test_process_inputs_invalid_json():
     """Test processing invalid JSON string input."""
     encoder = TerraformDataExternal()
@@ -33,6 +36,7 @@ def test_process_inputs_invalid_json():
     
     with pytest.raises(ValueError, match="Input data is not valid JSON"):
         encoder.process_inputs(test_input)
+
 
 def test_process_inputs_dict_input():
     """Test processing dictionary input."""
@@ -43,12 +47,14 @@ def test_process_inputs_dict_input():
     assert encoder.source == test_input
     assert isinstance(encoder.timestamp, str)
 
+
 def test_process_inputs_non_dict():
     """Test processing non-dictionary input."""
     encoder = TerraformDataExternal()
     
     with pytest.raises(ValueError, match="Input data must be a dictionary"):
         encoder.process_inputs(["not", "a", "dict"])
+
 
 def test_encode_data():
     """Test encoding data to base64."""
@@ -67,6 +73,7 @@ def test_encode_data():
         "timestamp": encoder.timestamp
     }
 
+
 def test_encode_data_with_error():
     """Test handling of JSON encoding errors."""
     # This test is tricky because JSON encoding errors are rare unless you manually corrupt data types.
@@ -79,8 +86,9 @@ def test_encode_data_with_error():
     encoder = TerraformDataExternal()
     encoder.config = Unserializable()
     
-    with pytest.raises(TypeError):  # Changed to TypeError
+    with pytest.raises(TypeError):
         encoder.encode_data()
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
