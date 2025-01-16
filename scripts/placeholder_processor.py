@@ -3,7 +3,9 @@ import json
 import logging
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 
@@ -14,9 +16,11 @@ class PlaceholderProcessor:
 
         :param data: Dictionary containing VPC data. Must include 'vpcs' key.
         """
-        if 'vpcs' not in data:
-            logger.warning("Input data does not contain 'vpcs' key. Wrapping data in 'vpcs'.")
-            self.data = {'vpcs': [data]}
+        if "vpcs" not in data:
+            logger.warning(
+                "Input data does not contain 'vpcs' key. Wrapping data in 'vpcs'."
+            )
+            self.data = {"vpcs": [data]}
         else:
             self.data = data
 
@@ -28,7 +32,7 @@ class PlaceholderProcessor:
         :return: A context dictionary for template processing.
         """
         context = self._flatten(vpc)
-        context['count_index'] = 0  # Initialize, will be overridden in process method
+        context["count_index"] = 0  # Initialize, will be overridden in process method
         return context
 
     def process(self):
@@ -39,10 +43,12 @@ class PlaceholderProcessor:
         """
         try:
             result = []
-            for vpc in self.data['vpcs']:
+            for vpc in self.data["vpcs"]:
                 context = self._create_context(vpc)
-                for index in range(vpc['vpc_subnets']):
-                    context['count_index'] = index + 1  # Update count_index for each iteration
+                for index in range(vpc["vpc_subnets"]):
+                    context["count_index"] = (
+                        index + 1
+                    )  # Update count_index for each iteration
                     result.append(self._process_vpc(vpc, context, index))
             return json.dumps(result, indent=2)
         except KeyError as ke:
@@ -63,16 +69,18 @@ class PlaceholderProcessor:
         """
         processed_vpc = {}
         for key, value in vpc.items():
-            if key == 'template':
+            if key == "template":
                 processed_vpc.update(self._resolve_template(value, context, index))
             elif isinstance(value, dict):
                 processed_vpc[key] = self._process_dict(value, context, index)
             elif isinstance(value, list):
                 processed_vpc[key] = self._process_list(value, context, index)
             else:
-                processed_vpc[key] = self._resolve_placeholders(str(value), context, index)
+                processed_vpc[key] = self._resolve_placeholders(
+                    str(value), context, index
+                )
         # Add dynamic vlan_id
-        processed_vpc['vlan_id'] = index + 1
+        processed_vpc["vlan_id"] = index + 1
         return processed_vpc
 
     def _resolve_template(self, template, context, index):
@@ -90,7 +98,9 @@ class PlaceholderProcessor:
                 resolved[key] = self._resolve_placeholders(value, context, index)
             except Exception as e:
                 logger.error(f"Error resolving template for key '{key}': {e}")
-                resolved[key] = value  # If resolution fails, keep the original template value
+                resolved[key] = (
+                    value  # If resolution fails, keep the original template value
+                )
         return resolved
 
     def _process_dict(self, data, context, index):
@@ -141,18 +151,27 @@ class PlaceholderProcessor:
         :return: String with resolved placeholders.
         """
         if isinstance(value, str):
-            placeholders = re.findall(r'{(\w+)}', value)
+            placeholders = re.findall(r"{(\w+)}", value)
             for placeholder in placeholders:
                 if placeholder in context:
                     if isinstance(context[placeholder], list):
-                        value = value.replace(f'{{{placeholder}}}', str(context[placeholder][index % len(context[placeholder])]))
+                        value = value.replace(
+                            f"{{{placeholder}}}",
+                            str(
+                                context[placeholder][index % len(context[placeholder])]
+                            ),
+                        )
                     else:
-                        value = value.replace(f'{{{placeholder}}}', str(context[placeholder]))
+                        value = value.replace(
+                            f"{{{placeholder}}}", str(context[placeholder])
+                        )
                 else:
-                    logger.warning(f"Placeholder {placeholder} not found in context. Keeping placeholder in output.")
+                    logger.warning(
+                        f"Placeholder {placeholder} not found in context. Keeping placeholder in output."
+                    )
         return value
 
-    def _flatten(self, d, parent_key='', sep='_'):
+    def _flatten(self, d, parent_key="", sep="_"):
         """
         Flatten a nested dictionary into a single level dictionary.
 
